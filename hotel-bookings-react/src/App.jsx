@@ -49,21 +49,6 @@ const FILE_COLUMN_ID = 'file_mkxy94cc'; // Update with your file column ID
 const STATUS_COLUMN_ID = 'deal_stage'; // Update with your status column ID
 
 
-const testToken = async () => {
-     const response = await fetch('https://api.monday.com/v2', {
-       method: 'POST',
-       headers: {
-         'Authorization': API_TOKEN,
-         'Content-Type': 'application/json'
-       },
-       body: JSON.stringify({
-         query: '{ me { id name } }'
-       })
-     });
-     console.log('Token test:', await response.json());
-   };
-console.log('testToken',testToken)
-// ============ PDF GENERATOR FUNCTION ============
 const generateQuotePDF = (quote) => {
   const doc = new jsPDF('p', 'mm', 'a4');
   const pageWidth = 210;
@@ -307,34 +292,18 @@ const generateQuotePDF = (quote) => {
   return doc;
 };
 
-const monday = mondaySdk();
-// ============ MONDAY.COM FUNCTIONS ============
+
 const uploadPDFToMonday = async (itemId, pdfBlob, filename) => {
-  try {
-    const base64 = await pdfBlobToBase64(pdfBlob);
+  const formData = new FormData();
+  formData.append('file', pdfBlob, filename);
+  formData.append('itemId', itemId);
 
-    const response = await fetch(`/api/upload?itemId=${itemId}&filename=${filename}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "text/plain",
-      },
-      body: base64,
-    });
-
-    return await response.json();
-
-  } catch (err) {
-    console.error("Upload Error:", err);
-    throw err;
-  }
-};
-
-const pdfBlobToBase64 = (blob) => {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result.split(",")[1]);
-    reader.readAsDataURL(blob);
+  const response = await fetch('http://localhost:3001/api/upload-to-monday', {
+    method: 'POST',
+    body: formData,
   });
+
+  return response.json();
 };
 
 const updateItemStatus = async (itemId, statusLabel = 'Quote Sent') => {
