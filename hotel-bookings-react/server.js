@@ -1,69 +1,81 @@
-import { serve } from 'bun';
+import { serve } from "bun";
 
-const MONDAY_API_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjU4OTUwNDc1MywiYWFpIjoxMSwidWlkIjo5NjYxNjc5OSwiaWFkIjoiMjAyNS0xMS0yMlQwNjoxMDoxOS41OTJaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MzI1NzMzNDIsInJnbiI6ImFwc2UyIn0.VPdRSYJv5ZAAw4S-ATgzauxoir1DnLeHOvllxDCGf_E';
-const FILE_COLUMN_ID = 'file_mkxy94cc';
+const MONDAY_API_TOKEN = "YOUR_TOKEN";
+const FILE_COLUMN_ID = "file_mkxy94cc";
 
 serve({
-  port: 3001,
+  port: 3001, // IMPORTANT: different from Vite 5173
   async fetch(req) {
-    // Handle CORS preflight
-    if (req.method === 'OPTIONS') {
-      return new Response(null, {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
-        },
-      });
-    }
-
-    if (req.method === 'POST' && new URL(req.url).pathname === '/api/upload-to-monday') {
-      try {
-        const formData = await req.formData();
-        const file = formData.get('file');
-        const itemId = formData.get('itemId');
-
-        const query = `mutation add_file($file: File!, $itemId: ID!, $columnId: String!) {
-          add_file_to_column(item_id: $itemId, column_id: $columnId, file: $file) {
-            id
-          }
-        }`;
-
-        const mondayFormData = new FormData();
-        mondayFormData.append('query', query);
-        mondayFormData.append('variables[itemId]', itemId);
-        mondayFormData.append('variables[columnId]', FILE_COLUMN_ID);
-        mondayFormData.append('file', file);
-
-        const response = await fetch('https://api.monday.com/v2/file', {
-          method: 'POST',
+    try {
+      // --- CORS ---
+      if (req.method === "OPTIONS") {
+        return new Response(null, {
           headers: {
-            'Authorization': MONDAY_API_TOKEN,
-          },
-          body: mondayFormData,
-        });
-
-        const data = await response.json();
-
-        return new Response(JSON.stringify(data), {
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
-          },
-        });
-      } catch (error) {
-        return new Response(JSON.stringify({ error: error.message }), {
-          status: 500,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
           },
         });
       }
-    }
 
-    return new Response('Not Found', { status: 404 });
+      const { pathname } = new URL(req.url);
+
+      if (req.method === "POST" && pathname === "/api/upload-to-monday") {
+        const formData = await req.formData();
+        const file = formData.get("file");
+        const itemId = formData.get("itemId");
+
+        if (!file || !itemId) {
+          return json({ error: "Missing file or itemId" }, 400);
+        }
+
+        // Convert Bun File -> Blob (Bun bug fix)
+        const fileBlob = new Blob([await file.arrayBuffer()], {
+          type: file.type,
+        });
+
+        const mondayFD = new FormData();
+        mondayFD.append(
+          "query",
+          `mutation add_file($file: File!, $itemId: ID!, $column: String!) {
+            add_file_to_column(item_id: $itemId, column_id: $column, file: $file) {
+              id
+            }
+          }`
+        );
+
+        mondayFD.append("variables[itemId]", itemId);
+        mondayFD.append("variables[column]", FILE_COLUMN_ID);
+        mondayFD.append("file", fileBlob, file.name);
+
+        // Send to Monday
+        const apiRes = await fetch("https://api.monday.com/v2/file", {
+          method: "POST",
+          headers: {
+            Authorization: MONDAY_API_TOKEN,
+          },
+          body: mondayFD,
+        });
+
+        const data = await apiRes.json(); // this is now safe
+
+        return json(data);
+      }
+
+      return json({ error: "Not Found" }, 404);
+    } catch (err) {
+      return json({ error: err.message || "Server Error" }, 500);
+    }
   },
 });
 
-console.log('Server running on http://localhost:3001');
+// helper
+function json(obj, status = 200) {
+  return new Response(JSON.stringify(obj), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+    },
+  });
+}

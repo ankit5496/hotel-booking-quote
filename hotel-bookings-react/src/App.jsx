@@ -293,13 +293,27 @@ const generateQuotePDF = (quote) => {
 };
 
 
-const uploadPDFToMonday = async (itemId, pdfBlob, filename) => {
+const uploadFileToMonday = async (itemId, file) => {
   const formData = new FormData();
-  formData.append('file', pdfBlob, filename);
-  formData.append('itemId', itemId);
 
-  const response = await fetch('http://localhost:3001/api/upload-to-monday', {
-    method: 'POST',
+  const query = `
+    mutation add_file($file: File!, $itemId: ID!, $columnId: String!) {
+      add_file_to_column(item_id: $itemId, column_id: $columnId, file: $file) {
+        id
+      }
+    }
+  `;
+
+  formData.append("query", query);
+  formData.append("variables[itemId]", itemId);
+  formData.append("variables[columnId]", "file_mkxy9dr0");
+  formData.append("file", file);
+
+  const response = await fetch("https://api.monday.com/v2/file", {
+    method: "POST",
+    headers: {
+      Authorization: API_TOKEN, 
+    },
     body: formData,
   });
 
@@ -351,8 +365,8 @@ const styles = {
   logo: { width: '40px', height: '40px', background: 'linear-gradient(135deg, #22c55e, #16a34a)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '20px' },
   headerTitle: { margin: 0, fontSize: '20px' },
   headerSub: { margin: 0, fontSize: '12px', color: '#94a3b8' },
-  main: { maxWidth: '1200px', margin: '0 auto', padding: '24px', display: 'grid', gridTemplateColumns: '1fr 400px', gap: '24px' },
-  card: { background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '20px', marginBottom: '16px' },
+  main: { maxWidth: '1200px', margin: '0 auto', padding: '55px', display: 'grid', gridTemplateColumns: '1fr 400px', gap: '55px' },
+  card: { background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '30px', marginBottom: '16px' },
   sectionTitle: { fontSize: '16px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px' },
   stepNum: { width: '24px', height: '24px', background: '#3b82f6', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' },
   formGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
@@ -473,7 +487,7 @@ export default function HotelBooking() {
     }
 
     // Upload PDF to Monday.com
-    const uploadResult = await uploadPDFToMonday(2510637370, pdfBlob, filename);
+    const uploadResult = await uploadFileToMonday(2510637370, pdfBlob, filename);
     console.log('Upload successful:', uploadResult);
     
     // Update status to "Quote Sent"
