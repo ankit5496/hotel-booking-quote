@@ -293,32 +293,62 @@ const generateQuotePDF = (quote) => {
 };
 
 
-const uploadFileToMonday = async (itemId, file) => {
-  const formData = new FormData();
+const toBase64 = (blob) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = () => resolve(reader.result.split(",")[1]);
+  reader.onerror = reject;
+  reader.readAsDataURL(blob);
+});
 
-  const query = `
-    mutation add_file($file: File!, $itemId: ID!, $columnId: String!) {
-      add_file_to_column(item_id: $itemId, column_id: $columnId, file: $file) {
-        id
-      }
-    }
-  `;
+const uploadPDFToMonday = async (pdfBlob, itemId, columnId) => {
+  const form = new FormData();
+  form.append("file", pdfBlob, "quote.pdf");  
+  form.append("itemId", itemId);
+  form.append("columnId", columnId);
 
-  formData.append("query", query);
-  formData.append("variables[itemId]", itemId);
-  formData.append("variables[columnId]", "file_mkxy9dr0");
-  formData.append("file", file);
-
-  const response = await fetch("https://api.monday.com/v2/file", {
+  const response = await fetch("http://localhost:5000/api/upload", {
     method: "POST",
-    headers: {
-      Authorization: API_TOKEN, 
-    },
-    body: formData,
+    body: form,
   });
 
-  return response.json();
+  const data = await response.json();  // Fails if backend crashes
+  return data;
 };
+
+
+// const uploadFileToMonday = async (itemId, file, filename) => {
+//   const formData = new FormData();
+
+//   const query = `
+//     mutation add_file($file: File!, $itemId: ID!, $columnId: String!) {
+//       add_file_to_column(item_id: $itemId, column_id: $columnId, file: $file) {
+//         id
+//       }
+//     }
+//   `;
+
+//   formData.append("query", query);
+//   formData.append("variables[itemId]", itemId);
+//   formData.append("variables[columnId]", "file_mkxy9dr0");
+
+//   // 👉 FIX: file must be a File object, not Blob
+//   const fileObj = new File([file], filename, { type: "application/pdf" });
+
+//   formData.append("variables[file]", fileObj);
+//   formData.append("file", fileObj);
+
+//   const response = await fetch("https://api.monday.com/v2/file", {
+//     method: "POST",
+//     headers: {
+//       Authorization: API_TOKEN,
+//     },
+//     body: formData,
+//   });
+
+//   return response.json();
+// };
+
+
 
 const updateItemStatus = async (itemId, statusLabel = 'Quote Sent') => {
   try {
@@ -404,7 +434,29 @@ export default function HotelBooking() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mondayItemId, setMondayItemId] = useState('');
   const [error, setError] = useState('');
+  const [itemId, setItemId] = useState<number | null>(null);
   console.log('setmondayid',mondayItemId);
+
+  const monday = mondaySdk();
+
+    useEffect(() => {
+
+      monday.get("context").then((res) => {
+        const context = res.data;
+
+        if ("boardId" in context && "itemId" in context) {
+            const boardId = Number(context.boardId);
+            const itemId = Number(context.itemId);
+
+            console.log("Board ID:", boardId);
+            console.log("Item ID:", itemId);
+            setItemId(itemId);
+        } else {
+          console.warn("Board ID or Item ID not available in this context:", context);
+        }
+      });
+  }, []);
+  
   
   useEffect(() => {
     if (formData.region) {
@@ -473,6 +525,7 @@ export default function HotelBooking() {
     // Generate PDF blob
     const doc = generateQuotePDF(quote);
     const pdfBlob = doc.output('blob');
+    console.log("Blob test:", pdfBlob instanceof Blob, pdfBlob.type, pdfBlob.size);
     const filename = `Quote_${quote.guestName.replace(/\s+/g, '_')}_${quote.quoteDate.replace(/\//g, '-')}.pdf`;
     
     console.log('Generated PDF:', {
@@ -487,8 +540,8 @@ export default function HotelBooking() {
     }
 
     // Upload PDF to Monday.com
-    const uploadResult = await uploadFileToMonday(2510637370, pdfBlob, filename);
-    console.log('Upload successful:', uploadResult);
+    const result = await uploadPDFToMonday(pdfBlob, 123456789, "files");
+    console.log(result);
     
     // Update status to "Quote Sent"
     const updateStatus = await updateItemStatus(2510637370, 'Quote Sent');
