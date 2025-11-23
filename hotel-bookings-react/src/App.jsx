@@ -434,7 +434,7 @@ export default function HotelBooking() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mondayItemId, setMondayItemId] = useState('');
   const [error, setError] = useState('');
-  const [itemId, setItemId] = useState<number | null>(null);
+  const [itemId, setItemId] = useState('');
   console.log('setmondayid',mondayItemId);
 
   const monday = mondaySdk();
