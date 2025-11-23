@@ -439,18 +439,17 @@ export default function HotelBooking() {
 
   const monday = mondaySdk();
 
-    useEffect(() => {
-
+   useEffect(() => {
       monday.get("context").then((res) => {
         const context = res.data;
-
+        console.log('context',context)
         if ("boardId" in context && "itemId" in context) {
             const boardId = Number(context.boardId);
             const itemId = Number(context.itemId);
 
             console.log("Board ID:", boardId);
             console.log("Item ID:", itemId);
-            setItemId(itemId);
+            setMondayItemId(itemId);
         } else {
           console.warn("Board ID or Item ID not available in this context:", context);
         }
@@ -540,11 +539,11 @@ export default function HotelBooking() {
     }
 
     // Upload PDF to Monday.com
-    const result = await uploadPDFToMonday(pdfBlob, 123456789, "files");
+    const result = await uploadPDFToMonday(pdfBlob, setMondayItemId, "files");
     console.log(result);
     
     // Update status to "Quote Sent"
-    const updateStatus = await updateItemStatus(2510637370, 'Quote Sent');
+    const updateStatus = await updateItemStatus(setMondayItemId, 'Quote Sent');
     console.log('Status update successful:', updateStatus);
 
     setBookingStatus('Quote Sent');
@@ -565,7 +564,6 @@ export default function HotelBooking() {
     setFormData({ region: '', property: '', room: '', mealPlan: '', checkIn: '', checkOut: '', nights: 0, guestName: '', guestEmail: '', guestPhone: '', adults: 2, children: 0 });
     setQuote(null);
     setBookingStatus('');
-    // setMondayItemId('');
     setError('');
   };
 
