@@ -539,22 +539,22 @@ export default function HotelBooking() {
     }
 
     // Upload PDF to Monday.com
-    const result = await uploadPDFToMonday(pdfBlob, setMondayItemId, "files");
-    console.log(result);
+    // const result = await uploadPDFToMonday(pdfBlob, setMondayItemId, "files");
+    // console.log(result);
     
     // Update status to "Quote Sent"
     const updateStatus = await updateItemStatus(setMondayItemId, 'Quote Sent');
     console.log('Status update successful:', updateStatus);
 
     setBookingStatus('Quote Sent');
-    alert(`✅ Success!\n\nPDF uploaded to Item ID: 2510690743\nStatus updated to "Quote Sent"`);
+    //alert(`✅ Success!\n\nPDF uploaded to Item ID: 2510690743\nStatus updated to "Quote Sent"`);
 
   } catch (err) {
     console.error('Submission error:', err);
     setError(`Failed: ${err.message}`);
     
     // Show more detailed error to user
-    alert(`❌ Error: ${err.message}\n\nCheck console for details.`);
+    //alert(`❌ Error: ${err.message}\n\nCheck console for details.`);
   } finally {
     setIsSubmitting(false);
   }
