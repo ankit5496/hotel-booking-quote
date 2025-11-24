@@ -45,7 +45,10 @@ const MONDAY_API_URL = 'https://api.monday.com/v2';
 const MONDAY_FILE_URL = 'https://api.monday.com/v2/file';
 const API_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjU4OTUwNDc1MywiYWFpIjoxMSwidWlkIjo5NjYxNjc5OSwiaWFkIjoiMjAyNS0xMS0yMlQwNjoxMDoxOS41OTJaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MzI1NzMzNDIsInJnbiI6ImFwc2UyIn0.VPdRSYJv5ZAAw4S-ATgzauxoir1DnLeHOvllxDCGf_E";
 const BOOKINGS_BOARD_ID = 5025061726;
-const FILE_COLUMN_ID = 'file_mkxy94cc'; // Update with your file column ID
+// const FILE_COLUMN_ID = 'file_mkxy94cc'; // Update with your file column ID
+const FILE_COLUMN_ID = 'file_mkxy9dr0'; // Update with your file column ID
+console.log("Filecolumnnnupdateddd");
+
 const STATUS_COLUMN_ID = 'deal_stage'; // Update with your status column ID
 
 
