@@ -545,6 +545,9 @@ export default function HotelBooking() {
     // Update status to "Quote Sent"
     // const updateStatus = await updateItemStatus(2511604901, 'Quote Sent');
      const updateStatus = await updateItemStatus(mondayItemId, 'Quote Sent');
+     console.log('Status update successfullllllllllllllllllllllllllllllll:', updateStatus);
+
+
 
     
     console.log('Status update successful:', updateStatus);
