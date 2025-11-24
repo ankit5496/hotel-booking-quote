@@ -549,6 +549,13 @@ export default function HotelBooking() {
     // const updateStatus = await updateItemStatus(2511604901, 'Quote Sent');
     // Upload PDF to Monday.com
 
+// Upload PDF to Monday.com
+console.log('Using mondayItemId:', mondayItemId);
+const uploadResult = await uploadPDFToMonday(pdfBlob, mondayItemId, 'file_mkxy9dr0');
+console.log('File upload successful:', uploadResult);
+
+// Update status to "Quote Sent"
+// const updateStatus = await updateItemStatus(mondayItemId, 'Quote Sent');
 
      const updateStatus = await updateItemStatus(mondayItemId, 'Quote Sent');
      console.log('Status update successfullllllllllllllllllllllllllllllll:', updateStatus);
