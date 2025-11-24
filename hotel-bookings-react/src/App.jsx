@@ -303,19 +303,49 @@ const toBase64 = (blob) => new Promise((resolve, reject) => {
   reader.readAsDataURL(blob);
 });
 
+// const uploadPDFToMonday = async (pdfBlob, itemId, columnId) => {
+//   const form = new FormData();
+//   form.append("file", pdfBlob, "quote.pdf");  
+//   form.append("itemId", itemId);
+//   form.append("columnId", columnId);
+
+//   const response = await fetch("http://localhost:5000/api/upload", {
+//     method: "POST",
+//     body: form,
+//   });
+
+//   const data = await response.json();  // Fails if backend crashes
+//   return data;
+// };
+
+
 const uploadPDFToMonday = async (pdfBlob, itemId, columnId) => {
-  const form = new FormData();
-  form.append("file", pdfBlob, "quote.pdf");  
-  form.append("itemId", itemId);
-  form.append("columnId", columnId);
-
-  const response = await fetch("http://localhost:5000/api/upload", {
-    method: "POST",
-    body: form,
-  });
-
-  const data = await response.json();  // Fails if backend crashes
-  return data;
+  try {
+    const monday = mondaySdk();
+    
+    // Convert blob to File object
+    const filename = `Quote_${Date.now()}.pdf`;
+    const fileObj = new File([pdfBlob], filename, { type: "application/pdf" });
+    
+    const result = await monday.api(`
+      mutation ($file: File!, $itemId: ID!, $columnId: String!) {
+        add_file_to_column(item_id: $itemId, column_id: $columnId, file: $file) {
+          id
+        }
+      }
+    `, {
+      variables: {
+        file: fileObj,
+        itemId: itemId.toString(),
+        columnId: columnId
+      }
+    });
+    
+    return result;
+  } catch (error) {
+    console.error('File upload error:', error);
+    throw error;
+  }
 };
 
 
