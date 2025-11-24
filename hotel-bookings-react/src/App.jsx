@@ -319,37 +319,37 @@ const uploadPDFToMonday = async (pdfBlob, itemId, columnId) => {
 };
 
 
-const uploadFileToMonday = async (itemId, file, filename) => {
-  const formData = new FormData();
+// const uploadFileToMonday = async (itemId, file, filename) => {
+//   const formData = new FormData();
 
-  const query = `
-    mutation add_file($file: File!, $itemId: ID!, $columnId: String!) {
-      add_file_to_column(item_id: $itemId, column_id: $columnId, file: $file) {
-        id
-      }
-    }
-  `;
+//   const query = `
+//     mutation add_file($file: File!, $itemId: ID!, $columnId: String!) {
+//       add_file_to_column(item_id: $itemId, column_id: $columnId, file: $file) {
+//         id
+//       }
+//     }
+//   `;
 
-  formData.append("query", query);
-  formData.append("variables[itemId]", itemId);
-  formData.append("variables[columnId]", "file_mkxy9dr0");
+//   formData.append("query", query);
+//   formData.append("variables[itemId]", itemId);
+//   formData.append("variables[columnId]", "file_mkxy9dr0");
 
-  // 👉 FIX: file must be a File object, not Blob
-  const fileObj = new File([file], filename, { type: "application/pdf" });
+//   // 👉 FIX: file must be a File object, not Blob
+//   const fileObj = new File([file], filename, { type: "application/pdf" });
 
-  formData.append("variables[file]", fileObj);
-  formData.append("file", fileObj);
+//   formData.append("variables[file]", fileObj);
+//   formData.append("file", fileObj);
 
-  const response = await fetch("https://api.monday.com/v2/file", {
-    method: "POST",
-    headers: {
-      Authorization: API_TOKEN,
-    },
-    body: formData,
-  });
+//   const response = await fetch("https://api.monday.com/v2/file", {
+//     method: "POST",
+//     headers: {
+//       Authorization: API_TOKEN,
+//     },
+//     body: formData,
+//   });
 
-  return response.json();
-};
+//   return response.json();
+// };
 
 
 
@@ -548,11 +548,6 @@ export default function HotelBooking() {
     // Update status to "Quote Sent"
     // const updateStatus = await updateItemStatus(2511604901, 'Quote Sent');
     // Upload PDF to Monday.com
-console.log('Using mondayItemId:', mondayItemId);
-const uploadResult = await uploadFileToMonday(pdfBlob, mondayItemId, 'file_mkxy9dr0', filename);
-console.log('File upload successful:', uploadResult);
-
-// Update status to "Quote Sent"
 
 
      const updateStatus = await updateItemStatus(mondayItemId, 'Quote Sent');
