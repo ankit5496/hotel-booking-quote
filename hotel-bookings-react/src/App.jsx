@@ -676,7 +676,7 @@ export default function HotelBooking() {
                 <div style={{height: '10px'}}></div>
 
                 <button onClick={submitBooking} disabled={isSubmitting || bookingStatus === 'Quote Sent'} style={{...styles.btnSuccess, opacity: (isSubmitting || bookingStatus === 'Quote Sent') ? 0.5 : 1}}>
-                  {isSubmitting ? '⏳ Uploading PDF...' : bookingStatus === 'Quote Sent' ? '✓ Quote Sent' : '📤 Send Quote to Monday.com'}
+                  {isSubmitting ? '⏳ Uploading PDF...' : bookingStatus === 'Quote Sent' ? '✓ Quote Sent' : '📤 Save'}
                 </button>
                 
                 {bookingStatus === 'Quote Sent' && <p style={{fontSize: '12px', color: '#4ade80', textAlign: 'center', marginTop: '8px'}}>PDF attached • Status: "Quote Sent"</p>}
